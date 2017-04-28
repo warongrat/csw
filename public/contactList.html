@@ -1,0 +1,88 @@
+  <!DOCTYPE html>
+  <html>
+  <head>    
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Horseman App</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
+    <script src="angular.min.js"></script>
+    <script src="angular-resource.min.js"></script>
+    <style>
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      th, td {
+        text-align: left;
+        padding: 8px;
+      }
+
+      tr:nth-child(even){background-color: #f2f2f2}
+
+      th {
+        background-color: #4CAF50;
+        color: white;
+      }
+    </style>
+  </head>
+
+  <body > 
+    <div ng-app="contactApp" ng-controller="ContactCtrl" class="container">
+      <h1>Contact List App</h1>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Name</th>         
+            <th>Email</th>
+            <th>Number</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="contact in contactlist track by $index"  ng-if="!isEmpty(contact)">              
+            <td>{{ contact.name }}</td>              
+            <td>{{ contact.email }}</td>              
+            <td>{{ contact.number }}     </td>                                        
+          </tr>
+        </tbody>
+      </table>  
+      <br> <br> <a href="/">Home</a>
+    </div>
+
+    <script type="text/javascript"> 
+      var app = angular.module("contactApp", ['ngResource'])  
+      app.controller("ContactCtrl", function($scope,$resource){   
+        var Contact = $resource('/api/contactlist/:contact_id',{contact_id: '@id'},
+
+        {
+          update:{ method:'PUT' }
+        }
+        )
+
+        $scope.editContact = {};
+        $scope.result = {};
+        $scope.contactlist = Contact.query()      
+
+        $scope.get = function(id) { 
+          Contact.get({ contact_id: id } , function (contact) {
+            $scope.result = contact
+            console.log( contact )
+            console.log('result name = ' + contact.name )          
+          })  
+        }
+
+        $scope.isEmpty = function(obj) {
+          return Object.keys(obj).length == 0;
+        }
+
+        $scope.select = function(id,obj) {
+         return   id == obj.id
+       }
+
+     })
+
+   </script>
+ </body> 
+ </html>

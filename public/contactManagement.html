@@ -1,0 +1,137 @@
+  <!DOCTYPE html>
+  <html>
+  <head>    
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Horseman App</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
+    <script src="angular.min.js"></script>
+    <script src="angular-resource.min.js"></script>
+    <style>
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      th, td {
+        text-align: left;
+        padding: 8px;
+      }
+
+      tr:nth-child(even){background-color: #f2f2f2}
+
+      th {
+        background-color: #4CAF50;
+        color: white;
+      }
+    </style>
+  </head>
+
+  <body > 
+    <div ng-app="contactApp" ng-controller="ContactCtrl" class="container">
+      <h1>Contact List App</h1>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Name</th>         
+            <th>Email</th>
+            <th>Number</th>
+            <th>Action</th>
+            <th>&nbsp;</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>	
+            <td><input type="text" class="form-control" id="name"   ng-model="Contact.name" ng-init="Contact.name=''"></td>
+            <td><input type="text" class="form-control" id="email"   ng-model="Contact.email" ng-init="Contact.email=''"></td>
+            <td><input type="text" class="form-control" id="number"   ng-model="Contact.number" ng-init="Contact.number=''"></td>
+            <td><button class="btn btn-primary" ng-click="add()">Add Contact</button></td>
+            <td><button class="btn btn-info" ng-click="update(Contact.id)">Update</button>&nbsp;&nbsp;<button class="btn btn-info" ng-click="deselect()">Clear</button></td>
+          </tr>
+          <tr ng-repeat="contact in contactlist track by $index"  ng-if="!isEmpty(contact)">              
+            <td>{{ contact.name }}</td>              
+            <td>{{ contact.email }}</td>              
+            <td>{{ contact.number }}     </td>                              
+            <td><button type="submit" class="btn btn-danger" ng-click="delete(contact.id)" class="btn btn-secondary"> Remove </button></td>       
+            <td><button type="submit" class="btn btn-warning" ng-click="edit(contact.id)" class="btn btn-secondary"> Edit </button></td>   
+            
+          </tr>
+        </tbody>
+      </table>  
+      <br> <br> <a href="/">Home</a>
+    </div>
+
+    <script type="text/javascript"> 
+      var app = angular.module("contactApp", ['ngResource'])  
+      app.controller("ContactCtrl", function($scope,$resource){   
+        var Contact = $resource('/api/contactlist/:contact_id',{contact_id: '@id'},
+
+        {
+          update:{ method:'PUT' }
+        }
+        )
+
+        $scope.editContact = {};
+        $scope.result = {};
+        $scope.contactlist = Contact.query()      
+
+        $scope.get = function(id) { 
+          Contact.get({ contact_id: id } , function (contact) {
+            $scope.result = contact
+            console.log( contact )
+            console.log('result name = ' + contact.name )          
+          })  
+        }
+
+        $scope.edit = function(id) { 
+          Contact.get({ contact_id: id }, function(contact) {
+            $scope.Contact.id = id 
+            $scope.Contact.name = contact.name
+            $scope.Contact.email = contact.email
+            $scope.Contact.number = contact.number
+            $scope.result = 'Edit contact ' + id           
+            $scope.get(id)
+          })  
+        }      
+
+        $scope.update = function(id) {  
+          if( $scope.Contact.name != '' ) {               
+            Contact.update({contact_id: id}, {name: $scope.Contact.name, email: $scope.Contact.email, number: $scope.Contact.number });
+            $scope.result = 'Contact '+ id +' is updated'          
+            $scope.contactlist = Contact.query();  
+            $scope.get(id)
+          } 
+          else {
+            $scope.result = 'Please enter updating contact by Select Edit button'
+          }
+        }
+
+        $scope.delete = function(id) {         
+          Contact.delete({ contact_id: id } )         
+          $scope.result = 'Contact '+ id +' is deleted'
+          $scope.contactlist = Contact.query(); 
+        }
+
+        $scope.add = function(){ 
+          Contact.save( {name: $scope.Contact.name, email: $scope.Contact.email, number: $scope.Contact.number })        
+          $scope.contactlist = Contact.query(); 
+        }; 
+        $scope.deselect = function() {
+          $scope.Contact = "";
+        }
+
+        $scope.isEmpty = function(obj) {
+          return Object.keys(obj).length == 0;
+        }
+
+        $scope.select = function(id,obj) {
+         return   id == obj.id
+       }
+
+     })
+      
+   </script>
+ </body> 
+ </html>
